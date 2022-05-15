@@ -13,6 +13,7 @@ function MortgageProperties({ dataChange }) {
     percentage,
     monthlyCosts: 1000,
     monthlyIncome: 250,
+    yearlyIncome: 30000,
     currentFunds: 68000,
   };
   const [value, setValue] = useState(defaultState);
@@ -93,6 +94,21 @@ function MortgageProperties({ dataChange }) {
             update({
               ...value,
               monthlyIncome: +changeEvent.target.value,
+            })
+          }
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="yearlyIncome">
+        <Form.Label>Yearly income</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="Enter yearly income"
+          value={value.yearlyIncome}
+          onChange={(changeEvent) =>
+            update({
+              ...value,
+              yearlyIncome: +changeEvent.target.value,
             })
           }
         />

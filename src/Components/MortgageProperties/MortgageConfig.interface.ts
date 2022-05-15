@@ -3,5 +3,6 @@ export interface MortgageConfig {
   percentage: number;
   currentFunds: number;
   monthlyIncome: number;
+  yearlyIncome: number;
   monthlyCosts: number;
 }
