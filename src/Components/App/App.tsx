@@ -5,115 +5,41 @@ import MortgageProperties from "../MortgageProperties/MortgageProperties";
 import { MortgageConfig } from "Components/MortgageProperties/MortgageConfig.interface";
 import React from "react";
 import FixationPicker from "Components/FixationPicker/FixationPicker";
-import { MortgageFixations } from "Components/FixationPicker/Fixations.interface";
+import {
+  MortgageFixations,
+  Fixation,
+} from "Components/FixationPicker/Fixations.interface";
+import axios from "axios";
+import { stat } from "fs";
 
 interface AppState {
   config?: MortgageConfig;
   startingCapital?: number;
   fixations?: MortgageFixations;
+  selectedFixation?: Fixation;
 }
 
 class App extends React.Component<{}, AppState> {
   constructor(props) {
     super(props);
-    this.state = {
-      fixations: {
-        perFixations: {
-          "1": {
-            fixation: 1,
-            loanInterestRate: 1.09,
-            installmentAmount: 325.79,
-            rpmn: 1.31,
-            totalAmount: 120653.94,
-            loanFee: 175.0,
-            ratingFee: 250.0,
-            cadasterFee: 66.0,
-            estateInsurance: 100.0,
-            loanDuration: 30,
-            lastInstallmentAmount: 204.33,
-          },
-          "2": {
-            fixation: 2,
-            loanInterestRate: 1.49,
-            installmentAmount: 344.64,
-            rpmn: 1.71,
-            totalAmount: 127374.28,
-            loanFee: 175.0,
-            ratingFee: 250.0,
-            cadasterFee: 66.0,
-            estateInsurance: 100.0,
-            loanDuration: 30,
-            lastInstallmentAmount: 157.52,
-          },
-          "3": {
-            fixation: 3,
-            loanInterestRate: 1.99,
-            installmentAmount: 369.12,
-            rpmn: 2.22,
-            totalAmount: 136083.31,
-            loanFee: 175.0,
-            ratingFee: 250.0,
-            cadasterFee: 66.0,
-            estateInsurance: 100.0,
-            loanDuration: 30,
-            lastInstallmentAmount: 78.23,
-          },
-          "5": {
-            fixation: 5,
-            loanInterestRate: 2.19,
-            installmentAmount: 379.19,
-            rpmn: 2.42,
-            totalAmount: 139661.37,
-            loanFee: 175.0,
-            ratingFee: 250.0,
-            cadasterFee: 66.0,
-            estateInsurance: 100.0,
-            loanDuration: 30,
-            lastInstallmentAmount: 41.16,
-          },
-          "7": {
-            fixation: 7,
-            loanInterestRate: 2.29,
-            installmentAmount: 384.29,
-            rpmn: 2.52,
-            totalAmount: 141469.32,
-            loanFee: 175.0,
-            ratingFee: 250.0,
-            cadasterFee: 66.0,
-            estateInsurance: 100.0,
-            loanDuration: 30,
-            lastInstallmentAmount: 18.21,
-          },
-          "10": {
-            fixation: 10,
-            loanInterestRate: 2.59,
-            installmentAmount: 399.82,
-            rpmn: 2.83,
-            totalAmount: 146971.87,
-            loanFee: 175.0,
-            ratingFee: 250.0,
-            cadasterFee: 66.0,
-            estateInsurance: 100.0,
-            loanDuration: 30,
-            lastInstallmentAmount: 345.31,
-          },
-        },
-        loanAmount: 100000.0,
-        loanDuration: 30,
-        currency: null,
-        loanDurationMonths: 360,
-      },
-    };
+    this.state = {};
   }
 
   valueChanged = (newValue: MortgageConfig) => {
-    this.setState({
-      ...this.state,
-      config: newValue,
-      startingCapital: Math.round(
-        newValue.propertyValue * (1 - newValue.percentage)
-      ),
-    });
+    const loanAmount = Math.round(newValue.propertyValue * newValue.percentage);
+    axios
+      .get("http://localhost:8090/calculateMortgage?loanAmount=" + loanAmount)
+      .then((response) => {
+        const fixations = response.data;
+        this.setState({
+          ...this.state,
+          config: newValue,
+          fixations,
+          startingCapital: Math.round(
+            newValue.propertyValue * (1 - newValue.percentage)
+          ),
+        });
+      });
   };
 
   render() {
@@ -133,10 +59,14 @@ class App extends React.Component<{}, AppState> {
         {this.state?.fixations ? (
           <Card style={{ width: "30rem" }}>
             <Card.Body>
-              <Card.Title>Fixations</Card.Title>
+              <Card.Title>
+                Fixations for loan amount - {this.state.fixations.loanAmount}
+              </Card.Title>
               <FixationPicker
                 fixations={this.state.fixations}
-                fixationSelected={(fixation) => console.log(fixation)}
+                fixationSelected={(fixation) =>
+                  this.setState({ ...this.state, selectedFixation: fixation })
+                }
               ></FixationPicker>
             </Card.Body>
           </Card>
@@ -186,13 +116,14 @@ function resultMonth(config: AppState, month: number) {
 
 function remainingFunds(state: AppState, month: number) {
   const config = state.config;
-  return (
+  const remainingFunds =
     config.currentFunds -
     state.startingCapital -
-    month * config.monthlyCosts +
+    month * config.monthlyCosts -
+    month * state.selectedFixation?.installmentAmount +
     month * config.monthlyIncome +
-    Math.floor(month / 12) * config.yearlyIncome
-  );
+    Math.floor(month / 12) * config.yearlyIncome;
+  return Math.round(remainingFunds);
 }
 
 export default App;
