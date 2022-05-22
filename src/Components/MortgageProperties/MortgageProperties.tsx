@@ -114,6 +114,21 @@ function MortgageProperties({ dataChange }) {
         />
       </Form.Group>
 
+      <Form.Group className="mb-3" controlId="currentFunds">
+        <Form.Label>Current funds</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="Enter current funds"
+          value={value.currentFunds}
+          onChange={(changeEvent) =>
+            update({
+              ...value,
+              currentFunds: +changeEvent.target.value,
+            })
+          }
+        />
+      </Form.Group>
+
       <Button variant="primary" onClick={() => dataChange(value)}>
         Submit
       </Button>
