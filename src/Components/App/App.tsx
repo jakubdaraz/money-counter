@@ -10,7 +10,9 @@ import {
   Fixation,
 } from "Components/FixationPicker/Fixations.interface";
 import axios from "axios";
-import { stat } from "fs";
+
+const backend = "localhost:52830";
+// const backend = "92.52.46.38:52830";
 
 interface AppState {
   config?: MortgageConfig;
@@ -28,7 +30,15 @@ class App extends React.Component<{}, AppState> {
   valueChanged = (newValue: MortgageConfig) => {
     const loanAmount = Math.round(newValue.propertyValue * newValue.percentage);
     axios
-      .get("http://localhost:8090/calculateMortgage?loanAmount=" + loanAmount)
+      .get(
+        "http://" +
+          backend +
+          "/calculateMortgage?loanAmount=" +
+          loanAmount +
+          "&productType=HTB" +
+          "&loanDuration=" +
+          newValue.loanDuration
+      )
       .then((response) => {
         const fixations = response.data;
         this.setState({
@@ -79,8 +89,10 @@ class App extends React.Component<{}, AppState> {
             <Card.Title>Results</Card.Title>
             {this.state?.config ? (
               <div className="results">
-                Capital required {this.state.startingCapital}
-                <div className="months">{getResults(this.state, 50)}</div>
+                <div className="capital">
+                  Capital required {this.state.startingCapital}
+                </div>
+                <div className="months">{getResults(this.state, 30 * 12)}</div>
               </div>
             ) : (
               <div>Press submit</div>
@@ -105,10 +117,11 @@ function resultMonth(config: AppState, month: number) {
   date.setMonth(date.getMonth() + month);
   const funds = remainingFunds(config, month);
   return (
-    <div className="mb-3">
-      <h4>
-        {date.getFullYear()} {date.getMonth() + 1}
-      </h4>
+    <div className="month">
+      <div>
+        <b>{date.getMonth() === 0 ? date.getFullYear() : ""} </b>
+        {date.getMonth() + 1}
+      </div>
       <div style={{ color: funds < 0 ? "red" : "unset" }}>{funds}</div>
     </div>
   );
@@ -120,9 +133,14 @@ function remainingFunds(state: AppState, month: number) {
     config.currentFunds -
     state.startingCapital -
     month * config.monthlyCosts -
-    month * state.selectedFixation?.installmentAmount +
+    (month < config.loanDuration * 12
+      ? month * state.selectedFixation?.installmentAmount
+      : 0) +
     month * config.monthlyIncome +
-    Math.floor(month / 12) * config.yearlyIncome;
+    Math.floor(
+      (new Date().getMonth() + month + (12 - config.yearlyIncomeMonth)) / 12
+    ) *
+      config.yearlyIncome;
   return Math.round(remainingFunds);
 }
 

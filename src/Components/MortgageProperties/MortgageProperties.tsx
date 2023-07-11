@@ -9,12 +9,14 @@ function MortgageProperties({ dataChange }) {
   const maxPropertyValue = 300000;
   const percentage = 0.8;
   const defaultState: MortgageConfig = {
-    propertyValue: maxPropertyValue,
+    propertyValue: 230000,
+    loanDuration: 30,
     percentage,
     monthlyCosts: 1000,
     monthlyIncome: 250,
-    yearlyIncome: 30000,
-    currentFunds: 68000,
+    yearlyIncome: 37000,
+    yearlyIncomeMonth: 4,
+    currentFunds: 50000,
   };
   const [value, setValue] = useState(defaultState);
 
@@ -38,18 +40,34 @@ function MortgageProperties({ dataChange }) {
           }
           max={maxPropertyValue}
         />
+        <RangeSlider
+          value={value.propertyValue}
+          onChange={(changeEvent) =>
+            update({
+              ...value,
+              propertyValue: +changeEvent.target.value,
+            })
+          }
+          max={maxPropertyValue}
+        />
       </Form.Group>
 
-      <RangeSlider
-        value={value.propertyValue}
-        onChange={(changeEvent) =>
-          update({
-            ...value,
-            propertyValue: +changeEvent.target.value,
-          })
-        }
-        max={maxPropertyValue}
-      />
+      <Form.Group className="mb-3" controlId="loanDuration">
+        <div>
+          <Form.Label>Loan Duration</Form.Label>
+        </div>
+        <RangeSlider
+          value={value.loanDuration}
+          onChange={(changeEvent) =>
+            update({
+              ...value,
+              loanDuration: +changeEvent.target.value,
+            })
+          }
+          min={4}
+          max={30}
+        />
+      </Form.Group>
 
       <Form.Group className="mb-3" controlId="percentage">
         <Form.Label>Percentage</Form.Label>
