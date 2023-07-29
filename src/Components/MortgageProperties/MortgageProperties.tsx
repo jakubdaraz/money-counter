@@ -81,6 +81,10 @@ function MortgageProperties({ dataChange }) {
             })
           }
         >
+          <option value="0.6">60%</option>
+          <option value="0.65">65%</option>
+          <option value="0.7">70%</option>
+          <option value="0.75">75%</option>
           <option value="0.8">80%</option>
           <option value="0.9">90%</option>
           <option value="1">100%</option>

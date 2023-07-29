@@ -138,7 +138,7 @@ function remainingFunds(state: AppState, month: number) {
       : 0) +
     month * config.monthlyIncome +
     Math.floor(
-      (new Date().getMonth() + month + (12 - config.yearlyIncomeMonth)) / 12
+      (new Date().getMonth() - config.yearlyIncomeMonth + month) / 12
     ) *
       config.yearlyIncome;
   return Math.round(remainingFunds);
